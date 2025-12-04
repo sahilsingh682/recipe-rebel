@@ -6,6 +6,13 @@ import { Input } from '@/components/ui/input';
 import { RecipeCard } from '@/components/RecipeCard';
 import { Search, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Recipe {
   id: string;
@@ -15,6 +22,7 @@ interface Recipe {
   image_url: string | null;
   average_rating: number;
   author_id: string;
+  meal_type: string | null;
   profiles: {
     name: string;
   };
@@ -25,6 +33,7 @@ export default function Home() {
   const navigate = useNavigate();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [mealTypeFilter, setMealTypeFilter] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -53,10 +62,10 @@ export default function Home() {
 
   const filteredRecipes = recipes.filter((recipe) => {
     const query = searchQuery.toLowerCase();
-    return (
-      recipe.title.toLowerCase().includes(query) ||
-      recipe.ingredients.some((ing) => ing.toLowerCase().includes(query))
-    );
+    const matchesSearch = recipe.title.toLowerCase().includes(query) ||
+      recipe.ingredients.some((ing) => ing.toLowerCase().includes(query));
+    const matchesMealType = mealTypeFilter === 'all' || recipe.meal_type === mealTypeFilter;
+    return matchesSearch && matchesMealType;
   });
 
   if (!user) {
@@ -94,8 +103,8 @@ export default function Home() {
           Share your culinary creations and explore recipes from our community
         </p>
 
-        {/* Search Bar */}
-        <div className="max-w-2xl mx-auto flex gap-4">
+        {/* Search and Filter */}
+        <div className="max-w-3xl mx-auto flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
@@ -105,6 +114,17 @@ export default function Home() {
               className="pl-10"
             />
           </div>
+          <Select value={mealTypeFilter} onValueChange={setMealTypeFilter}>
+            <SelectTrigger className="w-full sm:w-[160px]">
+              <SelectValue placeholder="Meal Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Meals</SelectItem>
+              <SelectItem value="breakfast">Breakfast</SelectItem>
+              <SelectItem value="lunch">Lunch</SelectItem>
+              <SelectItem value="dinner">Dinner</SelectItem>
+            </SelectContent>
+          </Select>
           <Button onClick={() => navigate('/upload')} className="shadow-warm">
             <Plus className="h-5 w-5 mr-2" />
             Upload Recipe
@@ -120,7 +140,7 @@ export default function Home() {
       ) : filteredRecipes.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-muted-foreground">
-            {searchQuery ? 'No recipes found matching your search.' : 'No recipes available yet. Be the first to share!'}
+            {searchQuery || mealTypeFilter !== 'all' ? 'No recipes found matching your filters.' : 'No recipes available yet. Be the first to share!'}
           </p>
         </div>
       ) : (

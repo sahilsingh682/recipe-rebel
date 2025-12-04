@@ -153,11 +153,16 @@ export type Database = {
         Row: {
           author_id: string
           average_rating: number | null
+          calories: number | null
+          carbs: number | null
           created_at: string
+          fat: number | null
           id: string
           image_url: string | null
           ingredients: string[]
+          meal_type: string | null
           preparation_time: number
+          protein: number | null
           status: Database["public"]["Enums"]["recipe_status"]
           title: string
           updated_at: string
@@ -165,11 +170,16 @@ export type Database = {
         Insert: {
           author_id: string
           average_rating?: number | null
+          calories?: number | null
+          carbs?: number | null
           created_at?: string
+          fat?: number | null
           id?: string
           image_url?: string | null
           ingredients: string[]
+          meal_type?: string | null
           preparation_time: number
+          protein?: number | null
           status?: Database["public"]["Enums"]["recipe_status"]
           title: string
           updated_at?: string
@@ -177,11 +187,16 @@ export type Database = {
         Update: {
           author_id?: string
           average_rating?: number | null
+          calories?: number | null
+          carbs?: number | null
           created_at?: string
+          fat?: number | null
           id?: string
           image_url?: string | null
           ingredients?: string[]
+          meal_type?: string | null
           preparation_time?: number
+          protein?: number | null
           status?: Database["public"]["Enums"]["recipe_status"]
           title?: string
           updated_at?: string
