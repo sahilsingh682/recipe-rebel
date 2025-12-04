@@ -5,10 +5,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Upload, Plus, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { recipeSchema } from '@/lib/validations';
 
 export default function UploadRecipe() {
   const { user } = useAuth();
@@ -50,6 +50,20 @@ export default function UploadRecipe() {
     e.preventDefault();
     if (!user) return;
 
+    // Validate form data
+    const filteredIngredients = ingredients.filter(ing => ing.trim() !== '');
+    const validationResult = recipeSchema.safeParse({
+      title,
+      ingredients: filteredIngredients,
+      preparationTime: parseInt(preparationTime) || 0,
+    });
+
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0];
+      toast.error(firstError.message);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -77,9 +91,9 @@ export default function UploadRecipe() {
       const { error: insertError } = await supabase
         .from('recipes')
         .insert({
-          title,
-          ingredients: ingredients.filter(ing => ing.trim() !== ''),
-          preparation_time: parseInt(preparationTime),
+          title: validationResult.data.title,
+          ingredients: validationResult.data.ingredients,
+          preparation_time: validationResult.data.preparationTime,
           image_url: imageUrl,
           author_id: user.id,
           status: 'pending'

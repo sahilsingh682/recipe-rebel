@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Star, Clock, User } from 'lucide-react';
 import { toast } from 'sonner';
+import { commentSchema } from '@/lib/validations';
 
 export default function RecipeDetail() {
   const { id } = useParams();
@@ -69,11 +70,17 @@ export default function RecipeDetail() {
   };
 
   const handleComment = async () => {
-    if (!user || !newComment.trim()) return;
+    if (!user) return;
+
+    const validationResult = commentSchema.safeParse({ text: newComment });
+    if (!validationResult.success) {
+      toast.error(validationResult.error.errors[0].message);
+      return;
+    }
 
     const { error } = await supabase
       .from('comments')
-      .insert({ recipe_id: id, user_id: user.id, text: newComment });
+      .insert({ recipe_id: id, user_id: user.id, text: validationResult.data.text });
 
     if (!error) {
       setNewComment('');
