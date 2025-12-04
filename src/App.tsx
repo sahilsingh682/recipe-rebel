@@ -8,6 +8,7 @@ import { Layout } from "@/components/Layout";
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import UploadRecipe from "./pages/UploadRecipe";
+import EditRecipe from "./pages/EditRecipe";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import RecipeDetail from "./pages/RecipeDetail";
@@ -30,6 +31,7 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/recipe/:id" element={<RecipeDetail />} />
+              <Route path="/recipe/:id/edit" element={<EditRecipe />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Layout>

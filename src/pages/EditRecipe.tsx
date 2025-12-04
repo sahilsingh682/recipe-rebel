@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, Plus, X } from 'lucide-react';
+import { Save, Plus, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { recipeSchema } from '@/lib/validations';
 import {
@@ -17,10 +17,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export default function UploadRecipe() {
+export default function EditRecipe() {
+  const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
   const [title, setTitle] = useState('');
   const [ingredients, setIngredients] = useState<string[]>(['']);
   const [preparationTime, setPreparationTime] = useState('');
@@ -31,6 +33,68 @@ export default function UploadRecipe() {
   const [fat, setFat] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
+  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (id && user) {
+      fetchRecipe();
+      checkAdminRole();
+    }
+  }, [id, user]);
+
+  const checkAdminRole = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+    setIsAdmin(!!data);
+  };
+
+  const fetchRecipe = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('recipes')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      if (!data) {
+        toast.error('Recipe not found');
+        navigate('/');
+        return;
+      }
+
+      // Check permission
+      if (data.author_id !== user?.id && !isAdmin) {
+        toast.error('You do not have permission to edit this recipe');
+        navigate('/');
+        return;
+      }
+
+      setTitle(data.title);
+      setIngredients(data.ingredients || ['']);
+      setPreparationTime(data.preparation_time?.toString() || '');
+      setMealType(data.meal_type || '');
+      setCalories(data.calories?.toString() || '');
+      setProtein(data.protein?.toString() || '');
+      setCarbs(data.carbs?.toString() || '');
+      setFat(data.fat?.toString() || '');
+      setExistingImageUrl(data.image_url);
+      if (data.image_url) {
+        setImagePreview(data.image_url);
+      }
+    } catch (error) {
+      console.error('Error fetching recipe:', error);
+      toast.error('Failed to load recipe');
+    } finally {
+      setIsFetching(false);
+    }
+  };
 
   const addIngredient = () => {
     setIngredients([...ingredients, '']);
@@ -60,9 +124,8 @@ export default function UploadRecipe() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || !id) return;
 
-    // Validate form data
     const filteredIngredients = ingredients.filter(ing => ing.trim() !== '');
     const validationResult = recipeSchema.safeParse({
       title,
@@ -84,9 +147,8 @@ export default function UploadRecipe() {
     setIsLoading(true);
 
     try {
-      let imageUrl = null;
+      let imageUrl = existingImageUrl;
 
-      // Upload image if provided
       if (imageFile) {
         const fileExt = imageFile.name.split('.').pop();
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
@@ -104,10 +166,9 @@ export default function UploadRecipe() {
         imageUrl = publicUrl;
       }
 
-      // Create recipe
-      const { error: insertError } = await supabase
+      const { error: updateError } = await supabase
         .from('recipes')
-        .insert({
+        .update({
           title: validationResult.data.title,
           ingredients: validationResult.data.ingredients,
           preparation_time: validationResult.data.preparationTime,
@@ -117,17 +178,16 @@ export default function UploadRecipe() {
           carbs: validationResult.data.carbs || null,
           fat: validationResult.data.fat || null,
           image_url: imageUrl,
-          author_id: user.id,
-          status: 'pending'
-        });
+        })
+        .eq('id', id);
 
-      if (insertError) throw insertError;
+      if (updateError) throw updateError;
 
-      toast.success('Recipe uploaded successfully! It will be reviewed by our team.');
-      navigate('/dashboard');
+      toast.success('Recipe updated successfully!');
+      navigate(`/recipe/${id}`);
     } catch (error) {
-      console.error('Error uploading recipe:', error);
-      toast.error('Failed to upload recipe');
+      console.error('Error updating recipe:', error);
+      toast.error('Failed to update recipe');
     } finally {
       setIsLoading(false);
     }
@@ -138,18 +198,21 @@ export default function UploadRecipe() {
     return null;
   }
 
+  if (isFetching) {
+    return <div className="container mx-auto px-4 py-8">Loading...</div>;
+  }
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       <Card className="shadow-card">
         <CardHeader>
-          <CardTitle className="text-3xl font-display">Upload Your Recipe</CardTitle>
+          <CardTitle className="text-3xl font-display">Edit Recipe</CardTitle>
           <CardDescription>
-            Share your culinary creation with the community. Your recipe will be reviewed before being published.
+            Update your recipe details below.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Title */}
             <div className="space-y-2">
               <Label htmlFor="title">Recipe Title</Label>
               <Input
@@ -161,7 +224,6 @@ export default function UploadRecipe() {
               />
             </div>
 
-            {/* Meal Type */}
             <div className="space-y-2">
               <Label>Meal Type (Optional)</Label>
               <Select value={mealType} onValueChange={setMealType}>
@@ -176,7 +238,6 @@ export default function UploadRecipe() {
               </Select>
             </div>
 
-            {/* Ingredients */}
             <div className="space-y-2">
               <Label>Ingredients</Label>
               {ingredients.map((ingredient, index) => (
@@ -211,7 +272,6 @@ export default function UploadRecipe() {
               </Button>
             </div>
 
-            {/* Preparation Time */}
             <div className="space-y-2">
               <Label htmlFor="prep-time">Preparation Time (minutes)</Label>
               <Input
@@ -225,7 +285,6 @@ export default function UploadRecipe() {
               />
             </div>
 
-            {/* Nutrition Info */}
             <div className="space-y-2">
               <Label>Nutrition Information (Optional)</Label>
               <div className="grid grid-cols-2 gap-4">
@@ -279,7 +338,6 @@ export default function UploadRecipe() {
               </div>
             </div>
 
-            {/* Image Upload */}
             <div className="space-y-2">
               <Label htmlFor="image">Recipe Image</Label>
               {imagePreview && (
@@ -299,10 +357,10 @@ export default function UploadRecipe() {
             </div>
 
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Uploading...' : (
+              {isLoading ? 'Saving...' : (
                 <>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload Recipe
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Changes
                 </>
               )}
             </Button>
