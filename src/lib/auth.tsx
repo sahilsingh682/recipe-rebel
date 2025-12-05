@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string, name: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -85,8 +85,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw error;
     }
 
-    toast.success('Account created successfully! Welcome to Recipe Rebel.');
-    navigate('/');
+    // Check if email confirmation is required
+    if (data?.user?.identities?.length === 0) {
+      toast.error('This email is already registered. Please sign in instead.');
+      return;
+    }
+
+    // Show email verification message
+    toast.success('Verification email sent! Please check your inbox to confirm your email address.', {
+      duration: 6000,
+    });
   };
 
   const signIn = async (email: string, password: string) => {

@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Star, Clock, User, Download, Pencil, Trash2, Flame, Beef, Wheat, Droplet } from 'lucide-react';
+import { Star, Clock, User, Download, Pencil, Trash2, Flame, Beef, Wheat, Droplet, ChefHat } from 'lucide-react';
 import { toast } from 'sonner';
 import { commentSchema } from '@/lib/validations';
 import {
@@ -281,6 +281,28 @@ export default function RecipeDetail() {
               ))}
             </div>
           </div>
+
+          {/* How to Make Steps */}
+          {recipe.steps && recipe.steps.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <ChefHat className="h-5 w-5 text-primary" />
+                <h2 className="text-xl font-semibold">How to Make</h2>
+              </div>
+              <div className="space-y-4">
+                {recipe.steps.map((step: string, idx: number) => (
+                  <div key={idx} className="flex gap-4">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold text-sm">
+                      {idx + 1}
+                    </div>
+                    <div className="flex-1 pt-1">
+                      <p className="text-foreground">{step}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {user && (
             <div>
