@@ -11,6 +11,13 @@ export const recipeSchema = z.object({
   )
     .min(1, 'At least one ingredient is required')
     .max(50, 'Maximum 50 ingredients allowed'),
+  steps: z.array(
+    z.string()
+      .min(1, 'Step cannot be empty')
+      .max(500, 'Step must be less than 500 characters')
+  )
+    .min(1, 'At least one step is required')
+    .max(30, 'Maximum 30 steps allowed'),
   preparationTime: z.number()
     .min(1, 'Preparation time must be at least 1 minute')
     .max(1440, 'Preparation time must be less than 24 hours'),

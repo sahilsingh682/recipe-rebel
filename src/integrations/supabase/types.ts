@@ -164,6 +164,7 @@ export type Database = {
           preparation_time: number
           protein: number | null
           status: Database["public"]["Enums"]["recipe_status"]
+          steps: string[] | null
           title: string
           updated_at: string
         }
@@ -181,6 +182,7 @@ export type Database = {
           preparation_time: number
           protein?: number | null
           status?: Database["public"]["Enums"]["recipe_status"]
+          steps?: string[] | null
           title: string
           updated_at?: string
         }
@@ -198,6 +200,7 @@ export type Database = {
           preparation_time?: number
           protein?: number | null
           status?: Database["public"]["Enums"]["recipe_status"]
+          steps?: string[] | null
           title?: string
           updated_at?: string
         }

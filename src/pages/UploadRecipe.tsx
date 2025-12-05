@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Upload, Plus, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -23,6 +24,7 @@ export default function UploadRecipe() {
   const [isLoading, setIsLoading] = useState(false);
   const [title, setTitle] = useState('');
   const [ingredients, setIngredients] = useState<string[]>(['']);
+  const [steps, setSteps] = useState<string[]>(['']);
   const [preparationTime, setPreparationTime] = useState('');
   const [mealType, setMealType] = useState<string>('');
   const [calories, setCalories] = useState('');
@@ -46,6 +48,20 @@ export default function UploadRecipe() {
     setIngredients(updated);
   };
 
+  const addStep = () => {
+    setSteps([...steps, '']);
+  };
+
+  const removeStep = (index: number) => {
+    setSteps(steps.filter((_, i) => i !== index));
+  };
+
+  const updateStep = (index: number, value: string) => {
+    const updated = [...steps];
+    updated[index] = value;
+    setSteps(updated);
+  };
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -64,9 +80,11 @@ export default function UploadRecipe() {
 
     // Validate form data
     const filteredIngredients = ingredients.filter(ing => ing.trim() !== '');
+    const filteredSteps = steps.filter(step => step.trim() !== '');
     const validationResult = recipeSchema.safeParse({
       title,
       ingredients: filteredIngredients,
+      steps: filteredSteps,
       preparationTime: parseInt(preparationTime) || 0,
       mealType: mealType || undefined,
       calories: calories ? parseInt(calories) : undefined,
@@ -110,6 +128,7 @@ export default function UploadRecipe() {
         .insert({
           title: validationResult.data.title,
           ingredients: validationResult.data.ingredients,
+          steps: validationResult.data.steps,
           preparation_time: validationResult.data.preparationTime,
           meal_type: validationResult.data.mealType || null,
           calories: validationResult.data.calories || null,
@@ -208,6 +227,45 @@ export default function UploadRecipe() {
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Ingredient
+              </Button>
+            </div>
+
+            {/* How to Make Steps */}
+            <div className="space-y-2">
+              <Label>How to Make (Steps)</Label>
+              {steps.map((step, index) => (
+                <div key={index} className="flex gap-2">
+                  <div className="flex-shrink-0 w-8 h-10 flex items-center justify-center bg-primary/10 rounded-md text-sm font-semibold text-primary">
+                    {index + 1}
+                  </div>
+                  <Textarea
+                    placeholder={`Describe step ${index + 1}...`}
+                    value={step}
+                    onChange={(e) => updateStep(index, e.target.value)}
+                    className="min-h-[80px]"
+                    required
+                  />
+                  {steps.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeStep(index)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addStep}
+                className="w-full"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Step
               </Button>
             </div>
 
