@@ -24,14 +24,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set up auth state listener
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
+        setLoading(false);
         
         if (session?.user) {
-          // Check if user is admin
+          // Check if user is admin - deferred to avoid deadlock
           setTimeout(async () => {
             try {
               const { data: roles } = await supabase
@@ -46,14 +48,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               console.error('Error checking admin status:', error);
             }
           }, 0);
+
+          // Clear hash fragment after successful OAuth login
+          if (event === 'SIGNED_IN' && window.location.hash) {
+            window.history.replaceState(null, '', window.location.pathname);
+          }
         } else {
           setIsAdmin(false);
         }
       }
     );
 
-    // Check for existing session
+    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
