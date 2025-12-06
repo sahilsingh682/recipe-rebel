@@ -29,7 +29,7 @@ interface Recipe {
 }
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -39,6 +39,15 @@ export default function Home() {
   useEffect(() => {
     fetchRecipes();
   }, []);
+
+  // Show loading state while auth is initializing (important for OAuth callback)
+  if (authLoading) {
+    return (
+      <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
 
   const fetchRecipes = async () => {
     try {
