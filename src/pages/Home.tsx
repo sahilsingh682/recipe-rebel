@@ -36,19 +36,6 @@ export default function Home() {
   const [mealTypeFilter, setMealTypeFilter] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    fetchRecipes();
-  }, []);
-
-  // Show loading state while auth is initializing (important for OAuth callback)
-  if (authLoading) {
-    return (
-      <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
-    );
-  }
-
   const fetchRecipes = async () => {
     try {
       const { data, error } = await supabase
@@ -68,6 +55,19 @@ export default function Home() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchRecipes();
+  }, []);
+
+  // Show loading state while auth is initializing (important for OAuth callback)
+  if (authLoading) {
+    return (
+      <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
 
   const filteredRecipes = recipes.filter((recipe) => {
     const query = searchQuery.toLowerCase();
