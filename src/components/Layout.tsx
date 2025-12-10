@@ -4,15 +4,18 @@ import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { ChefHat, Home, Upload, User, LogOut, Shield } from 'lucide-react';
 import { AIChatbot } from './AIChatbot';
-
 interface LayoutProps {
   children: ReactNode;
 }
-
-export function Layout({ children }: LayoutProps) {
-  const { user, isAdmin, signOut } = useAuth();
+export function Layout({
+  children
+}: LayoutProps) {
+  const {
+    user,
+    isAdmin,
+    signOut
+  } = useAuth();
   const navigate = useNavigate();
-
   const handleSignOut = async () => {
     try {
       await signOut();
@@ -20,9 +23,7 @@ export function Layout({ children }: LayoutProps) {
       console.error('Sign out error:', error);
     }
   };
-
-  return (
-    <div className="min-h-screen flex flex-col">
+  return <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-40 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 shadow-card">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -33,61 +34,32 @@ export function Layout({ children }: LayoutProps) {
             Recipe Rebel
           </Link>
 
-          {user && (
-            <nav className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/')}
-                className="transition-smooth"
-              >
+          {user && <nav className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="transition-smooth">
                 <Home className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Home</span>
               </Button>
               
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/upload')}
-                className="transition-smooth"
-              >
+              <Button variant="ghost" size="sm" onClick={() => navigate('/upload')} className="transition-smooth">
                 <Upload className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Upload</span>
               </Button>
               
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/dashboard')}
-                className="transition-smooth"
-              >
+              <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="transition-smooth">
                 <User className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Dashboard</span>
               </Button>
 
-              {isAdmin && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate('/admin')}
-                  className="transition-smooth"
-                >
+              {isAdmin && <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} className="transition-smooth">
                   <Shield className="h-4 w-4 mr-2" />
                   <span className="hidden sm:inline">Admin</span>
-                </Button>
-              )}
+                </Button>}
               
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleSignOut}
-                className="transition-smooth"
-              >
+              <Button variant="ghost" size="sm" onClick={handleSignOut} className="transition-smooth">
                 <LogOut className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Sign Out</span>
               </Button>
-            </nav>
-          )}
+            </nav>}
         </div>
       </header>
 
@@ -102,9 +74,8 @@ export function Layout({ children }: LayoutProps) {
       {/* Footer */}
       <footer className="border-t bg-card mt-auto">
         <div className="container mx-auto px-4 py-6 text-center text-sm text-muted-foreground">
-          <p>© 2024 Recipe Rebel. Share your passion for cooking.</p>
+          <p> Made with ❤️ by team Recipe Rebel © 2025 Recipe Rebel. Share your passion for cooking.   </p>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 }
