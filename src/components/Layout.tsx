@@ -74,7 +74,7 @@ export function Layout({
       {/* Footer */}
       <footer className="border-t bg-card mt-auto">
         <div className="container mx-auto px-4 py-6 text-center text-sm text-muted-foreground">
-          <p> Made with ❤️ by team Recipe Rebel © 2025 Recipe Rebel. Share your passion for cooking.   </p>
+          <p> Made with ❤️ by team Recipe Rebel    |   © 2025 Recipe Rebel</p>
         </div>
       </footer>
     </div>;
