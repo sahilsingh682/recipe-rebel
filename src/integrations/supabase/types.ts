@@ -245,7 +245,35 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_ratings: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          rating: number | null
+          recipe_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          rating?: number | null
+          recipe_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          rating?: number | null
+          recipe_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ratings_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       has_role: {
