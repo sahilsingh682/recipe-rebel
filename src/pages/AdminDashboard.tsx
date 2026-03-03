@@ -30,11 +30,9 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!user || !isAdmin) {
-      navigate('/');
-      return;
+    if (user && isAdmin) {
+      fetchData();
     }
-    fetchData();
   }, [user, isAdmin]);
 
   const fetchData = async () => {

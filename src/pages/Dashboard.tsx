@@ -29,11 +29,9 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-      return;
+    if (user) {
+      fetchUserData();
     }
-    fetchUserData();
   }, [user]);
 
   const fetchUserData = async () => {

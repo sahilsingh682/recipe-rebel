@@ -4,8 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { RecipeCard } from '@/components/RecipeCard';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, SlidersHorizontal } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Slider } from '@/components/ui/slider';
 import {
   Select,
   SelectContent,
@@ -34,6 +35,8 @@ export default function Home() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [mealTypeFilter, setMealTypeFilter] = useState<string>('all');
+  const [maxPrepTime, setMaxPrepTime] = useState<number>(120);
+  const [showFilters, setShowFilters] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchRecipes = async () => {
@@ -74,7 +77,8 @@ export default function Home() {
     const matchesSearch = recipe.title.toLowerCase().includes(query) ||
       recipe.ingredients.some((ing) => ing.toLowerCase().includes(query));
     const matchesMealType = mealTypeFilter === 'all' || recipe.meal_type === mealTypeFilter;
-    return matchesSearch && matchesMealType;
+    const matchesPrepTime = recipe.preparation_time <= maxPrepTime;
+    return matchesSearch && matchesMealType && matchesPrepTime;
   });
 
   if (!user) {
@@ -138,7 +142,29 @@ export default function Home() {
             <Plus className="h-5 w-5 mr-2" />
             Upload Recipe
           </Button>
+          <Button variant="outline" size="icon" onClick={() => setShowFilters(!showFilters)}>
+            <SlidersHorizontal className="h-5 w-5" />
+          </Button>
         </div>
+
+        {/* Advanced Filters */}
+        {showFilters && (
+          <div className="max-w-3xl mx-auto mt-4 p-4 bg-card rounded-lg border shadow-card">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Max Prep Time</span>
+                <span className="text-sm text-muted-foreground">{maxPrepTime} min</span>
+              </div>
+              <Slider
+                value={[maxPrepTime]}
+                onValueChange={(v) => setMaxPrepTime(v[0])}
+                max={180}
+                min={5}
+                step={5}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Recipes Grid */}

@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Star, Clock, User, Download, Pencil, Trash2, Flame, Beef, Wheat, Droplet, ChefHat } from 'lucide-react';
+import { Star, Clock, User, Download, Pencil, Trash2, Flame, Beef, Wheat, Droplet, ChefHat, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { commentSchema } from '@/lib/validations';
 import {
@@ -344,11 +344,40 @@ export default function RecipeDetail() {
 
           <div className="space-y-4">
             {comments.map((comment) => (
-              <div key={comment.id} className="border-l-2 border-primary pl-4">
-                <p className="font-semibold text-sm">{comment.profiles?.name}</p>
+              <div key={comment.id} className="border-l-2 border-primary pl-4 group">
+                <div className="flex items-center justify-between">
+                  <p className="font-semibold text-sm">{comment.profiles?.name}</p>
+                  {user && (user.id === comment.user_id || isAdmin) && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-smooth"
+                      onClick={async () => {
+                        const { error } = await supabase
+                          .from('comments')
+                          .delete()
+                          .eq('id', comment.id);
+                        if (!error) {
+                          toast.success('Comment deleted');
+                          fetchComments();
+                        } else {
+                          toast.error('Failed to delete comment');
+                        }
+                      }}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
                 <p className="text-sm text-muted-foreground">{comment.text}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {new Date(comment.created_at).toLocaleDateString()}
+                </p>
               </div>
             ))}
+            {comments.length === 0 && (
+              <p className="text-sm text-muted-foreground">No comments yet. Be the first!</p>
+            )}
           </div>
         </CardContent>
       </Card>
